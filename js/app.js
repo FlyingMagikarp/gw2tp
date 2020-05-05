@@ -1,5 +1,5 @@
 // Variables
-var items = [];
+var topLevelItem = {};
 
 
 // API urls
@@ -13,17 +13,18 @@ function start(){
 
 }
 
-function getItemObj(itemid){
-    url = baseURL+"items/"+itemid+languageAPI;
+function getItemObj(itemId){
+    url = baseURL+"items/"+itemId+languageAPI;
+    topLevelItem.id=itemId;
 
-    var request = new XMLHttpRequest();
+    let request = new XMLHttpRequest();
     request.open('GET', url, true);
     request.onload = function() {
         if (request.status >= 200 && request.status < 400) {
             item = JSON.parse(this.response);
             checkRecipe(item.id);
         } else {
-            console.log("Error during API call: getItemObj(), itemid = "+itemid);
+            console.log("Error during API call: getItemObj(), itemId = "+itemId);
         }
     };
     request.send();
@@ -31,24 +32,54 @@ function getItemObj(itemid){
 
 function checkRecipe(itemId){
     url = baseURL+"recipes/search?output="+itemId;
-    var request = new XMLHttpRequest();
+    let request = new XMLHttpRequest();
     request.open('GET', url, true);
     request.onload = function() {
-        recipes = (JSON.parse(this.response));
-        recipes.forEach(e=>getRecipeComponents(e))
+        if (request.status >= 200 && request.status < 400) {
+            recipes = (JSON.parse(this.response));
+            if(recipes.length>0) {
+                recipes.forEach(e => getRecipeComponents(e))
+            }
+        } else {
+            console.log("Error during API call: checkRecipe(), itemId = "+itemId);
+        }
     };
     request.send();
 }
 
 function getRecipeComponents(recipeId){
     url = baseURL+"recipes/"+recipeId;
-    var request = new XMLHttpRequest();
+    let request = new XMLHttpRequest();
     request.open('GET', url, true);
     request.onload = function() {
-        recipe = (JSON.parse(this.response));
-
+        if (request.status >= 200 && request.status < 400) {
+            recipe = (JSON.parse(this.response));
+            topLevelItem.recipe=recipe;
+            console.log(recipe);
+            //stuck here, recursion for all ingredients with price check
+            renderItem(item, recipe)
+        } else {
+            console.log("Error during API call: getRecipeComponents(), recipeId = "+recipeId);
+        }
     };
     request.send();
+}
+
+function getIngredientObj(itemId){
+
+}
+
+function checkItemPrice(itemId){
+
+}
+
+
+function renderItem(item, recipe){
+    document.write('<div>');
+    document.write('<img src="'+item.icon+'"/>');
+    document.write('<h4>'+item.name+'</h4>');
+    recipe.ingredients.forEach(e=>document.write('<p>'+e.item_id+': '+e.count+'</p>'));
+    document.write('</div>');
 }
 
 
