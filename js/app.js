@@ -1,87 +1,108 @@
-// Variables
-var topLevelItem = {};
-
-
-// API urls
 var baseURL = "https://api.guildwars2.com/v2/";
 var languageAPI = "?lang=en";
 
+var mainItem = {};
 
-function start(){
-    itemIds = 76614;
-    getItemObj(itemIds);
+async function start(value){
+    mainItem = await createObjectFromId(value);
 
+
+
+
+
+
+    console.log(mainItem);
 }
 
-function getItemObj(itemId){
-    url = baseURL+"items/"+itemId+languageAPI;
-    topLevelItem.id=itemId;
-
-    let request = new XMLHttpRequest();
-    request.open('GET', url, true);
-    request.onload = function() {
-        if (request.status >= 200 && request.status < 400) {
-            item = JSON.parse(this.response);
-            checkRecipe(item.id);
-        } else {
-            console.log("Error during API call: getItemObj(), itemId = "+itemId);
-        }
-    };
-    request.send();
+async function asyncForEach(array, callback) {
+    for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+    }
 }
 
-function checkRecipe(itemId){
+async function createIngredientObjects(rootItem){
+    if(rootItem.ingredients !== 'FINAL') {
+        asyncForEach(rootItem.ingredients, async (element) => {
+            element.itemObject = await createObjectFromId(element.item_id);
+        });
+    }
+}
+
+async function createObjectFromId(itemId){
+    let item = {};
+    item.id = itemId;
+
+    const itemObj = await getItemObject(item.id);
+
+    item.icon = itemObj.icon;
+
+    const mainItemPrices = await getPrices(item.id);
+
+    item.buyPrice = mainItemPrices.buys.unit_price;
+    item.sellPrice = mainItemPrices.sells.unit_price;
+
+    const recipes = await getAllRecipesId(item.id, {});
+
+    item.recipes = recipes;
+
+    if(typeof item.recipes !== "undefined" && item.recipes.length > 0) {
+        const mainRecipe = await getRecipeContent(recipes[0]);
+
+        item.outputAmount = mainRecipe.output_item_count;
+        item.ingredients = mainRecipe.ingredients;
+    } else {
+        item.outputAmount = 1;
+        item.ingredients = 'FINAL';
+    }
+
+    await createIngredientObjects(item);
+
+    return item;
+}
+
+async function getItemObject(itemId) {
+    url = baseURL + "items/" + itemId + languageAPI;
+    const response = await fetch(url, {});
+    if (response.ok){
+        return await response.json();
+    } else {
+        console.log("Error during API call: "+response.status+" At getItemObject() itemId: "+itemId);
+    }
+}
+
+async function getAllRecipesId(itemId){
     url = baseURL+"recipes/search?output="+itemId;
-    let request = new XMLHttpRequest();
-    request.open('GET', url, true);
-    request.onload = function() {
-        if (request.status >= 200 && request.status < 400) {
-            recipes = (JSON.parse(this.response));
-            if(recipes.length>0) {
-                recipes.forEach(e => getRecipeComponents(e))
-            }
-        } else {
-            console.log("Error during API call: checkRecipe(), itemId = "+itemId);
-        }
-    };
-    request.send();
+    const response = await fetch(url, {});
+    if (response.ok){
+        return await response.json();
+    } else {
+        console.log("Error during API call: "+response.status+" At getAllRecipesId() itemId: "+itemId);
+    }
 }
 
-function getRecipeComponents(recipeId){
+async function getRecipeContent(recipeId){
     url = baseURL+"recipes/"+recipeId;
-    let request = new XMLHttpRequest();
-    request.open('GET', url, true);
-    request.onload = function() {
-        if (request.status >= 200 && request.status < 400) {
-            recipe = (JSON.parse(this.response));
-            topLevelItem.recipe=recipe;
-            console.log(recipe);
-            //stuck here, recursion for all ingredients with price check
-            renderItem(item, recipe)
-        } else {
-            console.log("Error during API call: getRecipeComponents(), recipeId = "+recipeId);
-        }
-    };
-    request.send();
-}
+    const response = await fetch(url, {});
 
-function getIngredientObj(itemId){
-
-}
-
-function checkItemPrice(itemId){
-
+    if (response.ok){
+        return await response.json();
+    } else {
+        console.log("Error during API call: "+response.status+" At getRecipeContent() recipeId: "+recipeId);
+    }
 }
 
 
-function renderItem(item, recipe){
-    document.write('<div>');
-    document.write('<img src="'+item.icon+'"/>');
-    document.write('<h4>'+item.name+'</h4>');
-    recipe.ingredients.forEach(e=>document.write('<p>'+e.item_id+': '+e.count+'</p>'));
-    document.write('</div>');
-}
 
+
+async function getPrices(itemId){
+    url = baseURL+"commerce/prices/"+itemId;
+    const response = await fetch(url, {});
+    if (response.ok){
+        return await response.json();
+    } else {
+        console.log("Error during API call: "+response.status+" At getAllRecipesId() itemId: "+itemId);
+    }
+}
 
 function priceFormatter(value) {
     if(typeof value==='undefined'){value=0}
