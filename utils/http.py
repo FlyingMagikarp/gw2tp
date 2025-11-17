@@ -17,7 +17,7 @@ def http_get(
     backoff = 1.0
     for attempt in range(1, max_retries + 1):
         try:
-            resp = session.get(url, params=params, timeout=30)
+            resp = session.get(url, params=params, timeout=60)
             if resp.status_code == 200:
                 if logger:
                     rem = resp.headers.get("X-Rate-Limit-Remaining")
