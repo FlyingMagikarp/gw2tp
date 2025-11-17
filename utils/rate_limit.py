@@ -1,8 +1,9 @@
 import time
-import constants
+from utils.constants import DEFAULT_BURST
+from utils.constants import DEFAULT_REFILL_RATE
 
 class TokenBucket:
-    def __init__(self, capacity: int = constants.DEFAULT_BURST, refill_rate: float = constants.DEFAULT_REFILL_RATE):
+    def __init__(self, capacity: int = DEFAULT_BURST, refill_rate: float = DEFAULT_REFILL_RATE):
         self.capacity = capacity
         self.tokens = capacity
         self.refill_rate = refill_rate

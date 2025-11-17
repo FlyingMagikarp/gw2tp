@@ -1,5 +1,5 @@
 # GW2 API
-GW2_API_BASE_URL = "https://api.gw2.io"
+GW2_API_BASE_URL = "https://api.guildwars2.com/v2"
 GW2_API_ITEMS_URL = GW2_API_BASE_URL + "/items"
 GW2_API_RECIPE_SEARCH_URL = GW2_API_BASE_URL + "/recipes"
 GW2_API_RECIPE_URL = GW2_API_BASE_URL + "/recipes/search"
