@@ -2,9 +2,6 @@ import time
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-import os
-import psycopg2
-from psycopg2.extras import execute_values
 import requests
 import logging
 import sys
@@ -98,12 +95,11 @@ def write_item_details(items:List, logger: logging.Logger):
         return
 
     execute_values_batch(ITEMS_UPSERT_SQL, rows, page_size=MAX_IDS_PER_REQUEST, logger=logger)
-    logger.debug(f"Upserted {len(rows)} items into 'items'.")
+    logger.debug(f"Upserted {len(rows)} items into 't_item'.")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Dump GW2 items to CSV with batching, rate-limit handling, and retries.")
-    parser.add_argument("--out", default="items.csv", help="Output CSV path (default: items.csv)")
     parser.add_argument("--log-file", default=None, help="Optional path to a rotating log file")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable debug logging to console")
     args = parser.parse_args()
