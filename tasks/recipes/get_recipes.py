@@ -127,7 +127,7 @@ def load_item_ids():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Dump GW2 recipes to CSV with batching, rate-limit handling, and retries.")
+    parser = argparse.ArgumentParser(description="get recipes, rate-limit handling, and retries.")
     parser.add_argument("--log-file", default=None, help="Optional path to a rotating log file")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable debug logging to console")
     args = parser.parse_args()

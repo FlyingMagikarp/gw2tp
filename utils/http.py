@@ -18,7 +18,7 @@ def http_get(
     for attempt in range(1, max_retries + 1):
         try:
             resp = session.get(url, params=params, timeout=60)
-            if resp.status_code == 200:
+            if resp.status_code in (200, 206):
                 if logger:
                     rem = resp.headers.get("X-Rate-Limit-Remaining")
                     reset = resp.headers.get("X-Rate-Limit-Reset")

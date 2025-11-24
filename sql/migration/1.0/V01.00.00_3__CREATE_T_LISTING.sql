@@ -1,6 +1,6 @@
-CREATE TABLE public.t_item_price
+CREATE TABLE public.t_listing
 (
-    id integer NOT NULL,
+    id bigserial NOT NULL,
     item_id integer NOT NULL,
     "time" timestamp with time zone,
     buy_orders jsonb,
