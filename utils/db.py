@@ -49,3 +49,21 @@ def execute_values_batch(
 
     if logger:
         logger.debug(f"execute_values_batch: executed {len(rows)} rows.")
+
+
+def fetch_all(sql: str, params: Optional[Sequence[Any]] = None,
+              logger: Optional[logging.Logger] = None) -> list[tuple]:
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            rows = cur.fetchall()
+
+    if logger:
+        logger.debug(f"fetch_all: fetched {len(rows)} rows for query: {sql}")
+
+    return rows
+
+
+def fetch_column_list(sql: str, params=None) -> list[Any]:
+    rows = fetch_all(sql, params)
+    return [row[0] for row in rows]

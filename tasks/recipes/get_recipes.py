@@ -9,7 +9,7 @@ from typing import List, Iterable
 
 from utils.rate_limit import TokenBucket
 from utils.http import http_get
-from utils.db import load_sql, execute_values_batch
+from utils.db import load_sql, execute_values_batch, fetch_column_list
 from utils.constants import GW2_API_RECIPE_URL
 from utils.constants import MAX_IDS_PER_REQUEST
 from utils.constants import DEFAULT_BURST
@@ -96,10 +96,16 @@ def write_recipes_details(recipes:List, logger: logging.Logger):
     if not recipes:
         return
 
+    valid_item_ids = load_item_ids()
+
     recipe_rows = []
     ingredient_rows = []
     for it in recipes:
         try:
+            if it.get('output_item_id') not in valid_item_ids:
+                logger.warning(f"Skipping recipe {it.get('id')} due to invalid item id: {it['output_item_id']}")
+                continue
+
             recipe_rows.append(_parse_recipes_row(it))
             ingredient_rows.extend(_parse_ingredients_rows(it))
         except Exception as e:
@@ -114,6 +120,10 @@ def write_recipes_details(recipes:List, logger: logging.Logger):
     if ingredient_rows:
         execute_values_batch(INGREDIENTS_UPSERT_SQL, ingredient_rows, page_size=MAX_IDS_PER_REQUEST, logger=logger)
         logger.debug(f"Upserted {len(ingredient_rows)} ingredient rows into 't_ingredient'.")
+
+
+def load_item_ids():
+    return fetch_column_list("SELECT id FROM t_item")
 
 
 def main():
